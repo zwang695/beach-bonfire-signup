@@ -198,7 +198,7 @@ export function ItemList({ neededItems, onItemsChanged }: ItemListProps) {
                                   ? 'bg-green-100 text-green-700' 
                                   : 'bg-orange-100 text-orange-700'
                               }`}
-                              onClick={() => handleEditQuantity(item.item, item.quantityNeeded)}
+                              onClick={() => handleEditQuantity(item.item, item.quantityNeeded || 1)}
                               title="Click to edit quantity needed"
                             >
                               {item.quantityBrought || 0} / {item.quantityNeeded} brought

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { SignupForm } from '@/components/SignupForm';
 import { ItemList } from '@/components/ItemList';
 import { SignupList } from '@/components/SignupList';
@@ -35,7 +35,7 @@ export default function Home() {
   const [lastUpdateHash, setLastUpdateHash] = useState<string>('');
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const fetchData = async (silent = false) => {
+  const fetchData = useCallback(async (silent = false) => {
     if (silent) {
       setIsRefreshing(true);
     }
@@ -79,7 +79,7 @@ export default function Home() {
         setTimeout(() => setIsRefreshing(false), 500); // Brief indicator
       }
     }
-  };
+  }, [lastUpdateHash]);
 
   useEffect(() => {
     fetchData();
@@ -91,7 +91,7 @@ export default function Home() {
 
     // Cleanup interval on component unmount
     return () => clearInterval(interval);
-  }, [lastUpdateHash]); // Re-run when lastUpdateHash changes
+  }, [fetchData]); // Re-run when fetchData changes
 
   const handleSignupSuccess = () => {
     fetchData();

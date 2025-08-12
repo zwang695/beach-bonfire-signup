@@ -65,7 +65,7 @@ export class SheetsService {
       if (!headers.includes('Quantity')) {
         console.log('Adding Quantity column to existing Signups sheet...');
         // Resize sheet to add new column
-        await signupsSheet.resize({ columnCount: headers.length + 1 });
+        await signupsSheet.resize({ rowCount: signupsSheet.rowCount, columnCount: headers.length + 1 });
         
         // Update header row to include Quantity
         const newHeaders = [...headers];
@@ -123,7 +123,7 @@ export class SheetsService {
       if (!headers.includes('QuantityNeeded')) {
         console.log('Adding quantity columns to existing NeededItems sheet...');
         // Resize sheet to add new columns
-        await neededItemsSheet.resize({ columnCount: headers.length + 2 });
+        await neededItemsSheet.resize({ rowCount: neededItemsSheet.rowCount, columnCount: headers.length + 2 });
         
         // Update header row to include quantity columns
         const newHeaders = [...headers, 'QuantityNeeded', 'QuantityBrought'];
