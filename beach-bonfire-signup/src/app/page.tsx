@@ -32,33 +32,66 @@ export default function Home() {
   const [signups, setSignups] = useState<SignUpEntry[]>([]);
   const [neededItems, setNeededItems] = useState<NeededItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [lastUpdateHash, setLastUpdateHash] = useState<string>('');
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const fetchData = async () => {
+  const fetchData = async (silent = false) => {
+    if (silent) {
+      setIsRefreshing(true);
+    }
+    
     try {
       const [signupsRes, itemsRes] = await Promise.all([
         fetch('/api/signup'),
         fetch('/api/needed-items')
       ]);
 
-      if (signupsRes.ok) {
-        const signupsData = await signupsRes.json();
-        setSignups(signupsData.signups || []);
-      }
+      if (signupsRes.ok && itemsRes.ok) {
+        const [signupsData, itemsData] = await Promise.all([
+          signupsRes.json(),
+          itemsRes.json()
+        ]);
 
-      if (itemsRes.ok) {
-        const itemsData = await itemsRes.json();
-        setNeededItems(itemsData.neededItems || []);
+        // Create a hash of the data to detect changes
+        const currentHash = JSON.stringify({
+          signups: signupsData.signups || [],
+          items: itemsData.neededItems || []
+        });
+
+        // Only update if data has changed
+        if (currentHash !== lastUpdateHash) {
+          setSignups(signupsData.signups || []);
+          setNeededItems(itemsData.neededItems || []);
+          setLastUpdateHash(currentHash);
+          
+          // Show a subtle notification for background updates (except initial load)
+          if (lastUpdateHash && silent) {
+            console.log('🔄 Data updated automatically');
+          }
+        }
       }
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
-      setLoading(false);
+      if (!silent) {
+        setLoading(false);
+      } else {
+        setTimeout(() => setIsRefreshing(false), 500); // Brief indicator
+      }
     }
   };
 
   useEffect(() => {
     fetchData();
-  }, []);
+    
+    // Set up auto-refresh every 10 seconds
+    const interval = setInterval(() => {
+      fetchData(true); // silent = true for background updates
+    }, 10000);
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(interval);
+  }, [lastUpdateHash]); // Re-run when lastUpdateHash changes
 
   const handleSignupSuccess = () => {
     fetchData();
@@ -81,14 +114,25 @@ export default function Home() {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-6xl font-bold text-white mb-4">
-            🔥 Beach Bonfire BBQ 🏖️
-          </h1>
+          <div className="flex items-center justify-center mb-4">
+            <h1 className="text-6xl font-bold text-white">
+              🔥 Beach Bonfire BBQ 🏖️
+            </h1>
+            {isRefreshing && (
+              <div className="ml-4 flex items-center text-blue-200 text-sm">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Syncing...
+              </div>
+            )}
+          </div>
           <p className="text-xl text-blue-100 mb-2">
             Join us for an epic beach bonfire and BBQ!
           </p>
           <p className="text-lg text-blue-200">
-            📅 Saturday, August 17th • 🕕 5:00 PM • 📍 Davenport Beach, Santa Cruz
+            📅 Sunday, August 17th • 🕕 5:00 PM • 📍 Davenport Beach, Santa Cruz
+          </p>
+          <p className="text-sm text-blue-300 mt-2">
+            🔄 Auto-refreshes every 10 seconds
           </p>
         </div>
 

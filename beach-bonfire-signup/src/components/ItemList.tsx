@@ -34,7 +34,10 @@ export function ItemList({ neededItems, onItemsChanged }: ItemListProps) {
   const [isAdding, setIsAdding] = useState(false);
   const [newItem, setNewItem] = useState('');
   const [newCategory, setNewCategory] = useState<'food' | 'drinks' | 'supplies' | 'other'>('supplies');
+  const [newQuantityNeeded, setNewQuantityNeeded] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingItem, setEditingItem] = useState<string | null>(null);
+  const [editQuantity, setEditQuantity] = useState(1);
 
   const groupedItems = neededItems.reduce((acc, item) => {
     if (!acc[item.category]) {
@@ -58,11 +61,13 @@ export function ItemList({ neededItems, onItemsChanged }: ItemListProps) {
         body: JSON.stringify({
           item: newItem.trim(),
           category: newCategory,
+          quantityNeeded: newQuantityNeeded,
         }),
       });
 
       if (response.ok) {
         setNewItem('');
+        setNewQuantityNeeded(1);
         setIsAdding(false);
         onItemsChanged();
       }
@@ -91,6 +96,38 @@ export function ItemList({ neededItems, onItemsChanged }: ItemListProps) {
     } catch {
       // Handle error silently
     }
+  };
+
+  const handleEditQuantity = (itemName: string, currentQuantity: number) => {
+    setEditingItem(itemName);
+    setEditQuantity(currentQuantity);
+  };
+
+  const handleSaveQuantity = async (itemName: string) => {
+    try {
+      const response = await fetch('/api/needed-items', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          item: itemName,
+          quantityNeeded: editQuantity,
+        }),
+      });
+
+      if (response.ok) {
+        setEditingItem(null);
+        onItemsChanged();
+      }
+    } catch {
+      // Handle error silently
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingItem(null);
+    setEditQuantity(1);
   };
 
   return (
@@ -131,13 +168,42 @@ export function ItemList({ neededItems, onItemsChanged }: ItemListProps) {
                       </span>
                       {(item.quantityNeeded && item.quantityNeeded > 1) && (
                         <div className="text-xs mt-1">
-                          <span className={`px-2 py-1 rounded-full ${
-                            (item.quantityBrought || 0) >= item.quantityNeeded 
-                              ? 'bg-green-100 text-green-700' 
-                              : 'bg-orange-100 text-orange-700'
-                          }`}>
-                            {item.quantityBrought || 0} / {item.quantityNeeded} brought
-                          </span>
+                          {editingItem === item.item ? (
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="number"
+                                value={editQuantity}
+                                onChange={(e) => setEditQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                                className="w-16 px-2 py-1 text-xs border border-gray-300 rounded"
+                                min="1"
+                              />
+                              <span className="text-gray-500">needed</span>
+                              <button
+                                onClick={() => handleSaveQuantity(item.item)}
+                                className="px-2 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600"
+                              >
+                                ✓
+                              </button>
+                              <button
+                                onClick={handleCancelEdit}
+                                className="px-2 py-1 bg-gray-500 text-white text-xs rounded hover:bg-gray-600"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          ) : (
+                            <span 
+                              className={`px-2 py-1 rounded-full cursor-pointer hover:opacity-80 ${
+                                (item.quantityBrought || 0) >= item.quantityNeeded 
+                                  ? 'bg-green-100 text-green-700' 
+                                  : 'bg-orange-100 text-orange-700'
+                              }`}
+                              onClick={() => handleEditQuantity(item.item, item.quantityNeeded)}
+                              title="Click to edit quantity needed"
+                            >
+                              {item.quantityBrought || 0} / {item.quantityNeeded} brought
+                            </span>
+                          )}
                         </div>
                       )}
                     </div>
@@ -198,6 +264,16 @@ export function ItemList({ neededItems, onItemsChanged }: ItemListProps) {
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   disabled={isSubmitting}
                   autoFocus
+                />
+                <input
+                  type="number"
+                  value={newQuantityNeeded}
+                  onChange={(e) => setNewQuantityNeeded(Math.max(1, parseInt(e.target.value) || 1))}
+                  className="w-20 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Qty"
+                  min="1"
+                  title="Quantity Needed"
+                  disabled={isSubmitting}
                 />
                 <select
                   value={newCategory}

@@ -35,14 +35,20 @@ export async function POST(request: NextRequest) {
         timestamp: new Date().toISOString()
       });
 
-      // If this item was in the needed items, update quantity
+      // Check if this item was in the needed items
       const neededItem = neededItems.find(ni => 
         ni.item.toLowerCase() === itemObj.item.toLowerCase()
       );
       
       if (neededItem) {
+        // Update quantity for existing needed item
         const quantityBringing = itemObj.quantity || 1;
         await sheets.updateItemQuantity(neededItem.item, quantityBringing, name);
+      } else {
+        // Auto-add new item to needed list if it's not there
+        await sheets.addNeededItem(itemObj.item, itemObj.category, itemObj.quantity || 1);
+        // Also update the quantity brought since someone is bringing it
+        await sheets.updateItemQuantity(itemObj.item, itemObj.quantity || 1, name);
       }
     }
 

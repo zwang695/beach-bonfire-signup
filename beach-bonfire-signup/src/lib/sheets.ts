@@ -228,7 +228,7 @@ export class SheetsService {
     }
   }
 
-  async addNeededItem(item: string, category: 'food' | 'drinks' | 'supplies' | 'other'): Promise<void> {
+  async addNeededItem(item: string, category: 'food' | 'drinks' | 'supplies' | 'other', quantityNeeded: number = 1): Promise<void> {
     await this.doc.loadInfo();
     const sheet = this.doc.sheetsByTitle['NeededItems'];
     
@@ -237,9 +237,21 @@ export class SheetsService {
       Category: category,
       Taken: 'FALSE',
       TakenBy: '',
-      QuantityNeeded: '1',
+      QuantityNeeded: quantityNeeded.toString(),
       QuantityBrought: '0'
     });
+  }
+
+  async updateItemQuantityNeeded(itemName: string, quantityNeeded: number): Promise<void> {
+    await this.doc.loadInfo();
+    const sheet = this.doc.sheetsByTitle['NeededItems'];
+    const rows = await sheet.getRows();
+    
+    const row = rows.find(r => r.get('Item') === itemName);
+    if (row) {
+      row.set('QuantityNeeded', quantityNeeded.toString());
+      await row.save();
+    }
   }
 
   async removeNeededItem(itemName: string): Promise<void> {
