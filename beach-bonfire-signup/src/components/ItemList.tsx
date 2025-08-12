@@ -96,7 +96,7 @@ export function ItemList({ neededItems }: ItemListProps) {
 
       <div className="mt-6 p-4 bg-blue-50 rounded-lg">
         <p className="text-blue-800 text-sm text-center">
-          💡 Don't see what you want to bring? Add it when you sign up!
+          💡 Don&apos;t see what you want to bring? Add it when you sign up!
         </p>
       </div>
     </div>

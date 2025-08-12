@@ -27,7 +27,7 @@ export function SignupList({ signups }: SignupListProps) {
   return (
     <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl">
       <h2 className="text-2xl font-bold text-gray-800 mb-4 text-center">
-        🎉 Who's Coming? 🎉
+        🎉 Who&apos;s Coming? 🎉
       </h2>
       
       {sortedSignups.length === 0 ? (
@@ -42,7 +42,7 @@ export function SignupList({ signups }: SignupListProps) {
             {sortedSignups.length} awesome people signed up!
           </p>
           
-          {sortedSignups.map((signup, index) => (
+          {sortedSignups.map((signup) => (
             <div
               key={`${signup.email}-${signup.timestamp}`}
               className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-100"

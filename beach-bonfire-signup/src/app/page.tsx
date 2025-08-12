@@ -96,7 +96,7 @@ export default function Home() {
         {/* Footer */}
         <div className="mt-12 text-center text-blue-100">
           <p className="text-lg mb-2">
-            🌊 Can't wait to see everyone there! 🌊
+            🌊 Can&apos;t wait to see everyone there! 🌊
           </p>
           <p className="text-sm">
             Questions? Contact the organizers!
