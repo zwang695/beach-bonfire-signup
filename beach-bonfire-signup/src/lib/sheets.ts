@@ -3,7 +3,12 @@ import { JWT } from 'google-auth-library';
 
 const SHEET_ID = process.env.GOOGLE_SHEET_ID!;
 const SERVICE_ACCOUNT_EMAIL = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL!;
-const PRIVATE_KEY = process.env.GOOGLE_PRIVATE_KEY!.replace(/\\n/g, '\n');
+
+// Handle both escaped and literal newlines in private key
+let PRIVATE_KEY = process.env.GOOGLE_PRIVATE_KEY!;
+if (PRIVATE_KEY.includes('\\n')) {
+  PRIVATE_KEY = PRIVATE_KEY.replace(/\\n/g, '\n');
+}
 
 export interface SignUpEntry {
   name: string;
@@ -27,7 +32,7 @@ export class SheetsService {
     const serviceAccountAuth = new JWT({
       email: SERVICE_ACCOUNT_EMAIL,
       key: PRIVATE_KEY,
-      scopes: ['https://www.googleapis.com/spreadsheets'],
+      scopes: ['https://www.googleapis.com/auth/spreadsheets'],
     });
 
     this.doc = new GoogleSpreadsheet(SHEET_ID, serviceAccountAuth);
