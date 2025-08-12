@@ -11,15 +11,17 @@ export function SignupForm({ onSignupSuccess }: SignupFormProps) {
   const [email, setEmail] = useState('');
   const [item, setItem] = useState('');
   const [itemCategory, setItemCategory] = useState<'food' | 'drinks' | 'supplies' | 'other'>('other');
-  const [items, setItems] = useState<Array<{item: string; category: 'food' | 'drinks' | 'supplies' | 'other'}>>([]);
+  const [itemQuantity, setItemQuantity] = useState(1);
+  const [items, setItems] = useState<Array<{item: string; category: 'food' | 'drinks' | 'supplies' | 'other'; quantity: number}>>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState('');
 
   const addItem = () => {
     if (item.trim()) {
-      setItems([...items, { item: item.trim(), category: itemCategory }]);
+      setItems([...items, { item: item.trim(), category: itemCategory, quantity: itemQuantity }]);
       setItem('');
       setItemCategory('other');
+      setItemQuantity(1);
     }
   };
 
@@ -125,6 +127,11 @@ export function SignupForm({ onSignupSuccess }: SignupFormProps) {
               {items.map((addedItem, index) => (
                 <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded-lg">
                   <span className="text-sm">
+                    {addedItem.quantity > 1 && (
+                      <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium mr-2">
+                        {addedItem.quantity}x
+                      </span>
+                    )}
                     {addedItem.item} 
                     <span className="text-gray-500 ml-2">
                       ({addedItem.category === 'food' ? '🍔' : 
@@ -153,6 +160,15 @@ export function SignupForm({ onSignupSuccess }: SignupFormProps) {
               className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="e.g. Burgers, Chips, Beach Chairs..."
               onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addItem())}
+            />
+            <input
+              type="number"
+              value={itemQuantity}
+              onChange={(e) => setItemQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+              className="w-20 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Qty"
+              min="1"
+              title="Quantity"
             />
             <select
               value={itemCategory}

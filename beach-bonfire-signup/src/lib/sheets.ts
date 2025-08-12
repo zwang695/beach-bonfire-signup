@@ -16,9 +16,11 @@ export interface SignUpEntry {
   item: string;
   itemCategory: 'food' | 'drinks' | 'supplies' | 'other';
   timestamp: string;
+  quantity?: number;
   items?: Array<{
     item: string;
     category: 'food' | 'drinks' | 'supplies' | 'other';
+    quantity?: number;
   }>;
 }
 
@@ -27,6 +29,8 @@ export interface NeededItem {
   category: 'food' | 'drinks' | 'supplies' | 'other';
   taken: boolean;
   takenBy?: string;
+  quantityNeeded?: number;
+  quantityBrought?: number;
 }
 
 export class SheetsService {
@@ -52,42 +56,42 @@ export class SheetsService {
     if (!signupsSheet) {
       signupsSheet = await this.doc.addSheet({
         title: 'Signups',
-        headerValues: ['Name', 'Email', 'Item', 'Category', 'Timestamp']
+        headerValues: ['Name', 'Email', 'Item', 'Category', 'Quantity', 'Timestamp']
       });
     }
 
     if (!neededItemsSheet) {
       neededItemsSheet = await this.doc.addSheet({
         title: 'NeededItems',
-        headerValues: ['Item', 'Category', 'Taken', 'TakenBy']
+        headerValues: ['Item', 'Category', 'Taken', 'TakenBy', 'QuantityNeeded', 'QuantityBrought']
       });
 
       // Add default needed items
       const defaultItems = [
-        { Item: 'BBQ Grill', Category: 'supplies', Taken: 'FALSE', TakenBy: '' },
-        { Item: 'Charcoal', Category: 'supplies', Taken: 'FALSE', TakenBy: '' },
-        { Item: 'Lighter Fluid', Category: 'supplies', Taken: 'FALSE', TakenBy: '' },
-        { Item: 'Paper Plates', Category: 'supplies', Taken: 'FALSE', TakenBy: '' },
-        { Item: 'Napkins', Category: 'supplies', Taken: 'FALSE', TakenBy: '' },
-        { Item: 'Plastic Cups', Category: 'supplies', Taken: 'FALSE', TakenBy: '' },
-        { Item: 'Cooler with Ice', Category: 'supplies', Taken: 'FALSE', TakenBy: '' },
-        { Item: 'Beach Chairs', Category: 'supplies', Taken: 'FALSE', TakenBy: '' },
-        { Item: 'Umbrella/Tent', Category: 'supplies', Taken: 'FALSE', TakenBy: '' },
-        { Item: 'Trash Bags', Category: 'supplies', Taken: 'FALSE', TakenBy: '' },
-        { Item: 'Wet Wipes', Category: 'supplies', Taken: 'FALSE', TakenBy: '' },
-        { Item: 'Sunscreen', Category: 'supplies', Taken: 'FALSE', TakenBy: '' },
-        { Item: 'Burgers', Category: 'food', Taken: 'FALSE', TakenBy: '' },
-        { Item: 'Hot Dogs', Category: 'food', Taken: 'FALSE', TakenBy: '' },
-        { Item: 'Buns', Category: 'food', Taken: 'FALSE', TakenBy: '' },
-        { Item: 'Condiments', Category: 'food', Taken: 'FALSE', TakenBy: '' },
-        { Item: 'Fruit Salad', Category: 'food', Taken: 'FALSE', TakenBy: '' },
-        { Item: 'Chips', Category: 'food', Taken: 'FALSE', TakenBy: '' },
-        { Item: 'Sodas', Category: 'drinks', Taken: 'FALSE', TakenBy: '' },
-        { Item: 'Water Bottles', Category: 'drinks', Taken: 'FALSE', TakenBy: '' },
-        { Item: 'Beer', Category: 'drinks', Taken: 'FALSE', TakenBy: '' },
-        { Item: 'Sports Equipment', Category: 'other', Taken: 'FALSE', TakenBy: '' },
-        { Item: 'Bluetooth Speaker', Category: 'other', Taken: 'FALSE', TakenBy: '' },
-        { Item: 'Firewood', Category: 'supplies', Taken: 'FALSE', TakenBy: '' },
+        { Item: 'BBQ Grill', Category: 'supplies', Taken: 'FALSE', TakenBy: '', QuantityNeeded: '1', QuantityBrought: '0' },
+        { Item: 'Charcoal', Category: 'supplies', Taken: 'FALSE', TakenBy: '', QuantityNeeded: '1', QuantityBrought: '0' },
+        { Item: 'Lighter Fluid', Category: 'supplies', Taken: 'FALSE', TakenBy: '', QuantityNeeded: '1', QuantityBrought: '0' },
+        { Item: 'Paper Plates', Category: 'supplies', Taken: 'FALSE', TakenBy: '', QuantityNeeded: '50', QuantityBrought: '0' },
+        { Item: 'Napkins', Category: 'supplies', Taken: 'FALSE', TakenBy: '', QuantityNeeded: '100', QuantityBrought: '0' },
+        { Item: 'Plastic Cups', Category: 'supplies', Taken: 'FALSE', TakenBy: '', QuantityNeeded: '50', QuantityBrought: '0' },
+        { Item: 'Cooler with Ice', Category: 'supplies', Taken: 'FALSE', TakenBy: '', QuantityNeeded: '2', QuantityBrought: '0' },
+        { Item: 'Beach Chairs', Category: 'supplies', Taken: 'FALSE', TakenBy: '', QuantityNeeded: '10', QuantityBrought: '0' },
+        { Item: 'Umbrella/Tent', Category: 'supplies', Taken: 'FALSE', TakenBy: '', QuantityNeeded: '3', QuantityBrought: '0' },
+        { Item: 'Trash Bags', Category: 'supplies', Taken: 'FALSE', TakenBy: '', QuantityNeeded: '3', QuantityBrought: '0' },
+        { Item: 'Wet Wipes', Category: 'supplies', Taken: 'FALSE', TakenBy: '', QuantityNeeded: '5', QuantityBrought: '0' },
+        { Item: 'Sunscreen', Category: 'supplies', Taken: 'FALSE', TakenBy: '', QuantityNeeded: '3', QuantityBrought: '0' },
+        { Item: 'Burgers', Category: 'food', Taken: 'FALSE', TakenBy: '', QuantityNeeded: '1', QuantityBrought: '0' },
+        { Item: 'Hot Dogs', Category: 'food', Taken: 'FALSE', TakenBy: '', QuantityNeeded: '1', QuantityBrought: '0' },
+        { Item: 'Buns', Category: 'food', Taken: 'FALSE', TakenBy: '', QuantityNeeded: '1', QuantityBrought: '0' },
+        { Item: 'Condiments', Category: 'food', Taken: 'FALSE', TakenBy: '', QuantityNeeded: '1', QuantityBrought: '0' },
+        { Item: 'Fruit Salad', Category: 'food', Taken: 'FALSE', TakenBy: '', QuantityNeeded: '1', QuantityBrought: '0' },
+        { Item: 'Chips', Category: 'food', Taken: 'FALSE', TakenBy: '', QuantityNeeded: '1', QuantityBrought: '0' },
+        { Item: 'Sodas', Category: 'drinks', Taken: 'FALSE', TakenBy: '', QuantityNeeded: '1', QuantityBrought: '0' },
+        { Item: 'Water Bottles', Category: 'drinks', Taken: 'FALSE', TakenBy: '', QuantityNeeded: '1', QuantityBrought: '0' },
+        { Item: 'Beer', Category: 'drinks', Taken: 'FALSE', TakenBy: '', QuantityNeeded: '1', QuantityBrought: '0' },
+        { Item: 'Sports Equipment', Category: 'other', Taken: 'FALSE', TakenBy: '', QuantityNeeded: '1', QuantityBrought: '0' },
+        { Item: 'Bluetooth Speaker', Category: 'other', Taken: 'FALSE', TakenBy: '', QuantityNeeded: '1', QuantityBrought: '0' },
+        { Item: 'Firewood', Category: 'supplies', Taken: 'FALSE', TakenBy: '', QuantityNeeded: '5', QuantityBrought: '0' },
       ];
 
       await neededItemsSheet.addRows(defaultItems);
@@ -105,6 +109,7 @@ export class SheetsService {
       Email: entry.email,
       Item: entry.item,
       Category: entry.itemCategory,
+      Quantity: entry.quantity?.toString() || '1',
       Timestamp: entry.timestamp
     });
   }
@@ -119,6 +124,7 @@ export class SheetsService {
       email: row.get('Email') || '',
       item: row.get('Item') || '',
       itemCategory: row.get('Category') || 'other',
+      quantity: parseInt(row.get('Quantity') || '1'),
       timestamp: row.get('Timestamp') || ''
     }));
   }
@@ -132,7 +138,9 @@ export class SheetsService {
       item: row.get('Item') || '',
       category: row.get('Category') || 'other',
       taken: row.get('Taken') === 'TRUE',
-      takenBy: row.get('TakenBy') || undefined
+      takenBy: row.get('TakenBy') || undefined,
+      quantityNeeded: parseInt(row.get('QuantityNeeded') || '1'),
+      quantityBrought: parseInt(row.get('QuantityBrought') || '0')
     }));
   }
 
@@ -149,6 +157,35 @@ export class SheetsService {
     }
   }
 
+  async updateItemQuantity(itemName: string, quantityToAdd: number, takenBy: string): Promise<void> {
+    await this.doc.loadInfo();
+    const sheet = this.doc.sheetsByTitle['NeededItems'];
+    const rows = await sheet.getRows();
+    
+    const row = rows.find(r => r.get('Item') === itemName);
+    if (row) {
+      const currentQuantity = parseInt(row.get('QuantityBrought') || '0');
+      const newQuantity = currentQuantity + quantityToAdd;
+      const quantityNeeded = parseInt(row.get('QuantityNeeded') || '1');
+      
+      row.set('QuantityBrought', newQuantity.toString());
+      
+      // Update taken status based on quantity
+      if (newQuantity >= quantityNeeded) {
+        row.set('Taken', 'TRUE');
+      }
+      
+      // Update takenBy to include this person if not already there
+      const currentTakenBy = row.get('TakenBy') || '';
+      if (!currentTakenBy.includes(takenBy)) {
+        const newTakenBy = currentTakenBy ? `${currentTakenBy}, ${takenBy}` : takenBy;
+        row.set('TakenBy', newTakenBy);
+      }
+      
+      await row.save();
+    }
+  }
+
   async addNeededItem(item: string, category: 'food' | 'drinks' | 'supplies' | 'other'): Promise<void> {
     await this.doc.loadInfo();
     const sheet = this.doc.sheetsByTitle['NeededItems'];
@@ -157,7 +194,9 @@ export class SheetsService {
       Item: item,
       Category: category,
       Taken: 'FALSE',
-      TakenBy: ''
+      TakenBy: '',
+      QuantityNeeded: '1',
+      QuantityBrought: '0'
     });
   }
 

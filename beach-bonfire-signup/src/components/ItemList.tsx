@@ -7,6 +7,8 @@ interface NeededItem {
   category: 'food' | 'drinks' | 'supplies' | 'other';
   taken: boolean;
   takenBy?: string;
+  quantityNeeded?: number;
+  quantityBrought?: number;
 }
 
 interface ItemListProps {
@@ -97,7 +99,7 @@ export function ItemList({ neededItems, onItemsChanged }: ItemListProps) {
         📋 What We Need for the Party! 📋
       </h2>
       <p className="text-gray-600 text-center mb-6">
-        Green = taken care of • Red = still needed
+        Green = fully covered • Orange = partially covered • Red = still needed
       </p>
 
       <div className="space-y-6">
@@ -121,11 +123,24 @@ export function ItemList({ neededItems, onItemsChanged }: ItemListProps) {
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className={`font-medium ${
-                      item.taken ? 'text-green-800 line-through' : 'text-red-800'
-                    }`}>
-                      {item.item}
-                    </span>
+                    <div className="flex-1">
+                      <span className={`font-medium ${
+                        item.taken ? 'text-green-800 line-through' : 'text-red-800'
+                      }`}>
+                        {item.item}
+                      </span>
+                      {(item.quantityNeeded && item.quantityNeeded > 1) && (
+                        <div className="text-xs mt-1">
+                          <span className={`px-2 py-1 rounded-full ${
+                            (item.quantityBrought || 0) >= item.quantityNeeded 
+                              ? 'bg-green-100 text-green-700' 
+                              : 'bg-orange-100 text-orange-700'
+                          }`}>
+                            {item.quantityBrought || 0} / {item.quantityNeeded} brought
+                          </span>
+                        </div>
+                      )}
+                    </div>
                     <div className="flex items-center gap-2">
                       <span className={`px-2 py-1 rounded-full text-xs ${
                         categoryColors[item.category as keyof typeof categoryColors]

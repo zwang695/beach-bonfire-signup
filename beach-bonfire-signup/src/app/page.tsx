@@ -11,9 +11,11 @@ export interface SignUpEntry {
   item: string;
   itemCategory: 'food' | 'drinks' | 'supplies' | 'other';
   timestamp: string;
+  quantity?: number;
   items?: Array<{
     item: string;
     category: 'food' | 'drinks' | 'supplies' | 'other';
+    quantity?: number;
   }>;
 }
 
@@ -22,6 +24,8 @@ export interface NeededItem {
   category: 'food' | 'drinks' | 'supplies' | 'other';
   taken: boolean;
   takenBy?: string;
+  quantityNeeded?: number;
+  quantityBrought?: number;
 }
 
 export default function Home() {

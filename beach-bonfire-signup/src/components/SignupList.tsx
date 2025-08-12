@@ -6,6 +6,7 @@ interface SignUpEntry {
   item: string;
   itemCategory: 'food' | 'drinks' | 'supplies' | 'other';
   timestamp: string;
+  quantity?: number;
 }
 
 interface SignupListProps {
@@ -26,7 +27,8 @@ export function SignupList({ signups }: SignupListProps) {
     if (existing) {
       existing.items.push({
         item: signup.item,
-        category: signup.itemCategory
+        category: signup.itemCategory,
+        quantity: signup.quantity || 1
       });
     } else {
       acc.push({
@@ -35,7 +37,8 @@ export function SignupList({ signups }: SignupListProps) {
         timestamp: signup.timestamp,
         items: [{
           item: signup.item,
-          category: signup.itemCategory
+          category: signup.itemCategory,
+          quantity: signup.quantity || 1
         }]
       });
     }
@@ -44,7 +47,7 @@ export function SignupList({ signups }: SignupListProps) {
     name: string;
     email: string;
     timestamp: string;
-    items: Array<{item: string; category: 'food' | 'drinks' | 'supplies' | 'other'}>;
+    items: Array<{item: string; category: 'food' | 'drinks' | 'supplies' | 'other'; quantity: number}>;
   }>);
 
   const sortedSignups = groupedSignups.sort((a, b) => 
@@ -90,6 +93,11 @@ export function SignupList({ signups }: SignupListProps) {
                           <span className="mr-2">
                             {categoryEmojis[item.category]}
                           </span>
+                          {item.quantity > 1 && (
+                            <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium mr-2">
+                              {item.quantity}x
+                            </span>
+                          )}
                           <span className="font-medium">{item.item}</span>
                           <span className="text-gray-400 ml-2 text-xs">({item.category})</span>
                         </p>

@@ -4,12 +4,12 @@ import { SheetsService } from '@/lib/sheets';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, email, item, itemCategory, items } = body;
+    const { name, email, item, itemCategory, quantity, items } = body;
 
     // Support both single item (backward compatibility) and multiple items
     const itemsToProcess = items && items.length > 0 
       ? items 
-      : item ? [{ item, category: itemCategory || 'other' }] : [];
+      : item ? [{ item, category: itemCategory || 'other', quantity: quantity || 1 }] : [];
 
     if (!name || !email || itemsToProcess.length === 0) {
       return NextResponse.json(
@@ -31,16 +31,18 @@ export async function POST(request: NextRequest) {
         email,
         item: itemObj.item,
         itemCategory: itemObj.category,
+        quantity: itemObj.quantity || 1,
         timestamp: new Date().toISOString()
       });
 
-      // If this item was in the needed items, mark it as taken
+      // If this item was in the needed items, update quantity
       const neededItem = neededItems.find(ni => 
-        ni.item.toLowerCase() === itemObj.item.toLowerCase() && !ni.taken
+        ni.item.toLowerCase() === itemObj.item.toLowerCase()
       );
       
       if (neededItem) {
-        await sheets.markItemTaken(neededItem.item, name);
+        const quantityBringing = itemObj.quantity || 1;
+        await sheets.updateItemQuantity(neededItem.item, quantityBringing, name);
       }
     }
 
