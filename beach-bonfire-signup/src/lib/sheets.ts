@@ -58,6 +58,27 @@ export class SheetsService {
         title: 'Signups',
         headerValues: ['Name', 'Email', 'Item', 'Category', 'Quantity', 'Timestamp']
       });
+    } else {
+      // Check if Quantity column exists, if not add it
+      await signupsSheet.loadHeaderRow();
+      const headers = signupsSheet.headerValues;
+      if (!headers.includes('Quantity')) {
+        console.log('Adding Quantity column to existing Signups sheet...');
+        // Resize sheet to add new column
+        await signupsSheet.resize({ columnCount: headers.length + 1 });
+        
+        // Update header row to include Quantity
+        const newHeaders = [...headers];
+        newHeaders.splice(4, 0, 'Quantity'); // Insert 'Quantity' at index 4
+        await signupsSheet.setHeaderRow(newHeaders);
+        
+        // Update existing rows to have default quantity values
+        const rows = await signupsSheet.getRows();
+        for (const row of rows) {
+          row.set('Quantity', '1');
+          await row.save();
+        }
+      }
     }
 
     if (!neededItemsSheet) {
@@ -95,6 +116,27 @@ export class SheetsService {
       ];
 
       await neededItemsSheet.addRows(defaultItems);
+    } else {
+      // Check if quantity columns exist, if not add them
+      await neededItemsSheet.loadHeaderRow();
+      const headers = neededItemsSheet.headerValues;
+      if (!headers.includes('QuantityNeeded')) {
+        console.log('Adding quantity columns to existing NeededItems sheet...');
+        // Resize sheet to add new columns
+        await neededItemsSheet.resize({ columnCount: headers.length + 2 });
+        
+        // Update header row to include quantity columns
+        const newHeaders = [...headers, 'QuantityNeeded', 'QuantityBrought'];
+        await neededItemsSheet.setHeaderRow(newHeaders);
+        
+        // Update existing rows to have default quantity values
+        const rows = await neededItemsSheet.getRows();
+        for (const row of rows) {
+          row.set('QuantityNeeded', '1');
+          row.set('QuantityBrought', '0');
+          await row.save();
+        }
+      }
     }
 
     return { signupsSheet, neededItemsSheet };
