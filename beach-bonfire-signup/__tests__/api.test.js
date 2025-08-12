@@ -79,16 +79,16 @@ async function runTests() {
   }
   console.log();
 
-  // Test 5: Test signup
-  console.log('5. Testing POST /api/signup...');
+  // Test 5: Test single item signup (backward compatibility)
+  console.log('5. Testing POST /api/signup (single item)...');
   const signupResult = await testEndpoint('/api/signup', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      name: 'Test User',
-      email: 'test@example.com',
+      name: 'Test User Single',
+      email: 'test-single@example.com',
       item: 'Test Food Item',
       itemCategory: 'food'
     })
@@ -100,9 +100,33 @@ async function runTests() {
   }
   console.log();
 
-  // Test 6: Delete test item
+  // Test 6: Test multiple items signup
+  console.log('6. Testing POST /api/signup (multiple items)...');
+  const multiSignupResult = await testEndpoint('/api/signup', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      name: 'Test User Multi',
+      email: 'test-multi@example.com',
+      items: [
+        { item: 'Burgers', category: 'food' },
+        { item: 'Sodas', category: 'drinks' },
+        { item: 'Beach Chairs', category: 'supplies' }
+      ]
+    })
+  });
+  console.log(`   Status: ${multiSignupResult.status}`);
+  console.log(`   Success: ${multiSignupResult.success}`);
+  if (!multiSignupResult.success) {
+    console.log(`   Error: ${multiSignupResult.data?.error || multiSignupResult.error}`);
+  }
+  console.log();
+
+  // Test 7: Delete test item
   if (addItemResult.success) {
-    console.log('6. Testing DELETE /api/needed-items...');
+    console.log('7. Testing DELETE /api/needed-items...');
     const deleteResult = await testEndpoint('/api/needed-items', {
       method: 'DELETE',
       headers: {
@@ -123,7 +147,7 @@ async function runTests() {
   console.log('🏁 Tests completed!');
   
   // Summary
-  const tests = [testResult, itemsResult, signupsResult, addItemResult, signupResult];
+  const tests = [testResult, itemsResult, signupsResult, addItemResult, signupResult, multiSignupResult];
   const passed = tests.filter(t => t.success).length;
   const total = tests.length;
   

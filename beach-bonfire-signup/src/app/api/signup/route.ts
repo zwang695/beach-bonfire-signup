@@ -4,11 +4,16 @@ import { SheetsService } from '@/lib/sheets';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, email, item, itemCategory } = body;
+    const { name, email, item, itemCategory, items } = body;
 
-    if (!name || !email || !item) {
+    // Support both single item (backward compatibility) and multiple items
+    const itemsToProcess = items && items.length > 0 
+      ? items 
+      : item ? [{ item, category: itemCategory || 'other' }] : [];
+
+    if (!name || !email || itemsToProcess.length === 0) {
       return NextResponse.json(
-        { error: 'Name, email, and item are required' },
+        { error: 'Name, email, and at least one item are required' },
         { status: 400 }
       );
     }
@@ -16,23 +21,27 @@ export async function POST(request: NextRequest) {
     const sheets = new SheetsService();
     await sheets.initialize();
 
-    // Add the signup
-    await sheets.addSignup({
-      name,
-      email,
-      item,
-      itemCategory: itemCategory || 'other',
-      timestamp: new Date().toISOString()
-    });
-
-    // If this item was in the needed items, mark it as taken
+    // Get needed items once for all items
     const neededItems = await sheets.getNeededItems();
-    const neededItem = neededItems.find(ni => 
-      ni.item.toLowerCase() === item.toLowerCase() && !ni.taken
-    );
-    
-    if (neededItem) {
-      await sheets.markItemTaken(neededItem.item, name);
+
+    // Add signup for each item (for backward compatibility and individual tracking)
+    for (const itemObj of itemsToProcess) {
+      await sheets.addSignup({
+        name,
+        email,
+        item: itemObj.item,
+        itemCategory: itemObj.category,
+        timestamp: new Date().toISOString()
+      });
+
+      // If this item was in the needed items, mark it as taken
+      const neededItem = neededItems.find(ni => 
+        ni.item.toLowerCase() === itemObj.item.toLowerCase() && !ni.taken
+      );
+      
+      if (neededItem) {
+        await sheets.markItemTaken(neededItem.item, name);
+      }
     }
 
     return NextResponse.json({ success: true });

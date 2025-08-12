@@ -20,9 +20,39 @@ const categoryEmojis = {
 };
 
 export function SignupList({ signups }: SignupListProps) {
-  const sortedSignups = [...signups].sort((a, b) => 
+  // Group signups by person (email) to show multiple items per person
+  const groupedSignups = signups.reduce((acc, signup) => {
+    const existing = acc.find(entry => entry.email === signup.email);
+    if (existing) {
+      existing.items.push({
+        item: signup.item,
+        category: signup.itemCategory
+      });
+    } else {
+      acc.push({
+        name: signup.name,
+        email: signup.email,
+        timestamp: signup.timestamp,
+        items: [{
+          item: signup.item,
+          category: signup.itemCategory
+        }]
+      });
+    }
+    return acc;
+  }, [] as Array<{
+    name: string;
+    email: string;
+    timestamp: string;
+    items: Array<{item: string; category: 'food' | 'drinks' | 'supplies' | 'other'}>;
+  }>);
+
+  const sortedSignups = groupedSignups.sort((a, b) => 
     new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   );
+
+  const totalItems = signups.length;
+  const uniquePeople = groupedSignups.length;
 
   return (
     <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl">
@@ -39,7 +69,7 @@ export function SignupList({ signups }: SignupListProps) {
       ) : (
         <div className="space-y-3">
           <p className="text-gray-600 text-center mb-4">
-            {sortedSignups.length} awesome people signed up!
+            {uniquePeople} awesome people signed up bringing {totalItems} items!
           </p>
           
           {sortedSignups.map((signup) => (
@@ -52,17 +82,30 @@ export function SignupList({ signups }: SignupListProps) {
                   <p className="font-semibold text-gray-800">
                     👋 {signup.name}
                   </p>
-                  <p className="text-sm text-gray-600 flex items-center mt-1">
-                    <span className="mr-2">
-                      {categoryEmojis[signup.itemCategory]}
-                    </span>
-                    Bringing: <span className="font-medium ml-1">{signup.item}</span>
-                  </p>
+                  <div className="text-sm text-gray-600 mt-1">
+                    <p className="font-medium">Bringing:</p>
+                    <div className="mt-1 space-y-1">
+                      {signup.items.map((item, index) => (
+                        <p key={index} className="flex items-center">
+                          <span className="mr-2">
+                            {categoryEmojis[item.category]}
+                          </span>
+                          <span className="font-medium">{item.item}</span>
+                          <span className="text-gray-400 ml-2 text-xs">({item.category})</span>
+                        </p>
+                      ))}
+                    </div>
+                  </div>
                 </div>
                 <div className="text-right">
                   <p className="text-xs text-gray-500">
                     {new Date(signup.timestamp).toLocaleDateString()}
                   </p>
+                  {signup.items.length > 1 && (
+                    <p className="text-xs text-blue-600 font-medium">
+                      {signup.items.length} items
+                    </p>
+                  )}
                 </div>
               </div>
             </div>

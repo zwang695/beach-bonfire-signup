@@ -16,6 +16,10 @@ export interface SignUpEntry {
   item: string;
   itemCategory: 'food' | 'drinks' | 'supplies' | 'other';
   timestamp: string;
+  items?: Array<{
+    item: string;
+    category: 'food' | 'drinks' | 'supplies' | 'other';
+  }>;
 }
 
 export interface NeededItem {

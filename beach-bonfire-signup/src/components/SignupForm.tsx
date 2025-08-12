@@ -11,11 +11,35 @@ export function SignupForm({ onSignupSuccess }: SignupFormProps) {
   const [email, setEmail] = useState('');
   const [item, setItem] = useState('');
   const [itemCategory, setItemCategory] = useState<'food' | 'drinks' | 'supplies' | 'other'>('other');
+  const [items, setItems] = useState<Array<{item: string; category: 'food' | 'drinks' | 'supplies' | 'other'}>>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState('');
 
+  const addItem = () => {
+    if (item.trim()) {
+      setItems([...items, { item: item.trim(), category: itemCategory }]);
+      setItem('');
+      setItemCategory('other');
+    }
+  };
+
+  const removeItem = (index: number) => {
+    setItems(items.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Add current item if there's one being typed
+    if (item.trim()) {
+      addItem();
+    }
+
+    if (items.length === 0) {
+      setMessage('Please add at least one item you\'re bringing!');
+      return;
+    }
+
     setIsSubmitting(true);
     setMessage('');
 
@@ -28,8 +52,10 @@ export function SignupForm({ onSignupSuccess }: SignupFormProps) {
         body: JSON.stringify({
           name,
           email,
-          item,
-          itemCategory,
+          items,
+          // Keep backward compatibility
+          item: items[0]?.item || '',
+          itemCategory: items[0]?.category || 'other',
         }),
       });
 
@@ -38,6 +64,7 @@ export function SignupForm({ onSignupSuccess }: SignupFormProps) {
         setName('');
         setEmail('');
         setItem('');
+        setItems([]);
         setItemCategory('other');
         onSignupSuccess();
       } else {
@@ -88,35 +115,64 @@ export function SignupForm({ onSignupSuccess }: SignupFormProps) {
         </div>
 
         <div>
-          <label htmlFor="item" className="block text-sm font-medium text-gray-700 mb-1">
-            What are you bringing?
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            What are you bringing? (You can add multiple items!)
           </label>
-          <input
-            type="text"
-            id="item"
-            value={item}
-            onChange={(e) => setItem(e.target.value)}
-            required
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="e.g. Burgers, Chips, Beach Chairs..."
-          />
-        </div>
-
-        <div>
-          <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
-            Category
-          </label>
-          <select
-            id="category"
-            value={itemCategory}
-            onChange={(e) => setItemCategory(e.target.value as 'food' | 'drinks' | 'supplies' | 'other')}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="food">🍔 Food</option>
-            <option value="drinks">🥤 Drinks</option>
-            <option value="supplies">🏖️ Supplies</option>
-            <option value="other">🎯 Other</option>
-          </select>
+          
+          {/* Added Items List */}
+          {items.length > 0 && (
+            <div className="mb-3 space-y-2">
+              {items.map((addedItem, index) => (
+                <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded-lg">
+                  <span className="text-sm">
+                    {addedItem.item} 
+                    <span className="text-gray-500 ml-2">
+                      ({addedItem.category === 'food' ? '🍔' : 
+                        addedItem.category === 'drinks' ? '🥤' : 
+                        addedItem.category === 'supplies' ? '🏖️' : '🎯'} {addedItem.category})
+                    </span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => removeItem(index)}
+                    className="text-red-500 hover:text-red-700 text-sm"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          
+          {/* Add Item Input */}
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={item}
+              onChange={(e) => setItem(e.target.value)}
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="e.g. Burgers, Chips, Beach Chairs..."
+              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addItem())}
+            />
+            <select
+              value={itemCategory}
+              onChange={(e) => setItemCategory(e.target.value as 'food' | 'drinks' | 'supplies' | 'other')}
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="food">🍔 Food</option>
+              <option value="drinks">🥤 Drinks</option>
+              <option value="supplies">🏖️ Supplies</option>
+              <option value="other">🎯 Other</option>
+            </select>
+            <button
+              type="button"
+              onClick={addItem}
+              disabled={!item.trim()}
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+            >
+              Add
+            </button>
+          </div>
         </div>
 
         <button
