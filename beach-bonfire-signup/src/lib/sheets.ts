@@ -139,4 +139,27 @@ export class SheetsService {
       await row.save();
     }
   }
+
+  async addNeededItem(item: string, category: 'food' | 'drinks' | 'supplies' | 'other'): Promise<void> {
+    await this.doc.loadInfo();
+    const sheet = this.doc.sheetsByTitle['NeededItems'];
+    
+    await sheet.addRow({
+      Item: item,
+      Category: category,
+      Taken: 'FALSE',
+      TakenBy: ''
+    });
+  }
+
+  async removeNeededItem(itemName: string): Promise<void> {
+    await this.doc.loadInfo();
+    const sheet = this.doc.sheetsByTitle['NeededItems'];
+    const rows = await sheet.getRows();
+    
+    const row = rows.find(r => r.get('Item') === itemName);
+    if (row) {
+      await row.delete();
+    }
+  }
 }

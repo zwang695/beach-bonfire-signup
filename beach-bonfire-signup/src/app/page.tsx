@@ -56,6 +56,10 @@ export default function Home() {
     fetchData();
   };
 
+  const handleItemsChanged = () => {
+    fetchData();
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-blue-600 flex items-center justify-center">
@@ -76,7 +80,7 @@ export default function Home() {
             Join us for an epic beach bonfire and BBQ!
           </p>
           <p className="text-lg text-blue-200">
-            📅 Saturday, August 17th • 🕕 5:00 PM • 📍 Sunset Beach
+            📅 Saturday, August 17th • 🕕 5:00 PM • 📍 Davenport Beach, Santa Cruz
           </p>
         </div>
 
@@ -89,7 +93,7 @@ export default function Home() {
 
           {/* Right Column - Items */}
           <div>
-            <ItemList neededItems={neededItems} />
+            <ItemList neededItems={neededItems} onItemsChanged={handleItemsChanged} />
           </div>
         </div>
 
@@ -97,9 +101,6 @@ export default function Home() {
         <div className="mt-12 text-center text-blue-100">
           <p className="text-lg mb-2">
             🌊 Can&apos;t wait to see everyone there! 🌊
-          </p>
-          <p className="text-sm">
-            Questions? Contact the organizers!
           </p>
         </div>
       </div>
